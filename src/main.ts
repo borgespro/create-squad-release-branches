@@ -1,19 +1,28 @@
-import * as core from '@actions/core'
-import {wait} from './wait'
+import * as core from '@actions/core';
+import { getOctokit, context } from '@actions/github';
 
-async function run(): Promise<void> {
+import { createBranch } from './create-branch';
+
+async function run() {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const prefix = core.getInput('prefix');
+    const branch = core.getInput('branch');
+    const sha = core.getInput('sha');
+    const squads = core.getMultilineInput('squads');
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const currentVersion = branch.replace(/[a-z|-]/g, '');
 
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    let areCreated = false;
+
+    for (const squad of squads) {
+      core.debug(`Creating branch ${branch}`);
+      const newBranch = `${prefix}-${squad}-${currentVersion}`.toLowerCase();
+      areCreated = areCreated || !!(await createBranch(getOctokit, context, newBranch, sha));
+    }
+
+    core.setOutput('created', Boolean(areCreated));
+  } catch (error: any) {
+    core.setFailed(error.message);
   }
 }
-
-run()
+run();

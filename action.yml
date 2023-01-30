@@ -1,11 +1,23 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Create branches'
+description: 'When a release branch is created the script should create branches for all squads.'
+author: 'Thiago Borges'
+branding:
+  icon: 'git-branch'
+  color: 'green'
 inputs:
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  prefix:
+    description: 'Prefix for new branch name'
+    default: 'release'
+  branch:
+    description: 'The branch to create'
+    default: '${GITHUB_HEAD_REF}'
+  sha:
+    description: 'The SHA1 value for the branch reference'
+  squads:
+    description: 'A list of squad names'
+outputs:
+  created:
+    description: 'Boolean value representing whether or not a new branch was created.'
 runs:
   using: 'node16'
   main: 'dist/index.js'
