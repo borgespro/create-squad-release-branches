@@ -17,11 +17,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createBranch = void 0;
-function createBranch(getOctokit, context, branch, sha) {
+function createBranch(toolkit, context, branch, sha) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const toolkit = getOctokit(githubToken());
-        // Sometimes branch might come in with refs/heads already
         branch = branch.replace('refs/heads/', '');
         const ref = `refs/heads/${branch}`;
         // throws HttpError if branch already exists.
@@ -40,12 +38,6 @@ function createBranch(getOctokit, context, branch, sha) {
     });
 }
 exports.createBranch = createBranch;
-function githubToken() {
-    const token = process.env.GITHUB_TOKEN;
-    if (!token)
-        throw ReferenceError('No token defined in the environment variables');
-    return token;
-}
 
 
 /***/ }),
@@ -98,13 +90,15 @@ function run() {
             const branch = core.getInput('branch');
             const sha = core.getInput('sha');
             const squads = core.getMultilineInput('squads');
+            const token = core.getInput('GITHUB_TOKEN');
             const currentVersion = branch.replace(/[a-z|-]/g, '');
             let areCreated = false;
             for (const squad of squads) {
                 core.debug(`Creating branch ${branch}`);
                 const newBranch = `${prefix}-${squad}-${currentVersion}`.toLowerCase();
-                const created = !!(yield (0, create_branch_1.createBranch)(github_1.getOctokit, github_1.context, newBranch, sha));
-                areCreated = areCreated || created;
+                const toolkit = (0, github_1.getOctokit)(token);
+                const created = yield (0, create_branch_1.createBranch)(toolkit, github_1.context, newBranch, sha);
+                areCreated = areCreated || Boolean(created);
             }
             core.setOutput('created', Boolean(areCreated));
         }
