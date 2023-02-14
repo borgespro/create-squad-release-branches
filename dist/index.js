@@ -103,7 +103,8 @@ function run() {
             for (const squad of squads) {
                 core.debug(`Creating branch ${branch}`);
                 const newBranch = `${prefix}-${squad}-${currentVersion}`.toLowerCase();
-                areCreated = areCreated || !!(yield (0, create_branch_1.createBranch)(github_1.getOctokit, github_1.context, newBranch, sha));
+                const created = !!(yield (0, create_branch_1.createBranch)(github_1.getOctokit, github_1.context, newBranch, sha));
+                areCreated = areCreated || created;
             }
             core.setOutput('created', Boolean(areCreated));
         }
