@@ -9,6 +9,7 @@ async function run() {
     const branch = core.getInput('branch')
     const sha = core.getInput('sha')
     const squads = core.getMultilineInput('squads')
+    const token = core.getInput('GITHUB_TOKEN')
 
     const currentVersion = branch.replace(/[a-z|-]/g, '')
 
@@ -17,13 +18,9 @@ async function run() {
     for (const squad of squads) {
       core.debug(`Creating branch ${branch}`)
       const newBranch = `${prefix}-${squad}-${currentVersion}`.toLowerCase()
-      const created = !!(await createBranch(
-        getOctokit,
-        context,
-        newBranch,
-        sha
-      ))
-      areCreated = areCreated || created
+      const toolkit = getOctokit(token)
+      const created = await createBranch(toolkit, context, newBranch, sha)
+      areCreated = areCreated || Boolean(created)
     }
 
     core.setOutput('created', Boolean(areCreated))
